@@ -10,20 +10,37 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Checkout the repository
       - uses: actions/checkout@v4
+
+      # Configure Git credentials for deployment
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      # Set up Python
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+
+      # Create the cache path if it doesn't exist
+      - name: Create Cache Directory
+        run: mkdir -p .cache
+
+      # Set cache key
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - uses: actions/cache@v4
+
+      # Cache dependencies
+      - uses: actions/cache@v3
         with:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache
           restore-keys: |
             mkdocs-material-
+
+      # Install MkDocs and Material theme
       - run: pip install mkdocs-material
+
+      # Deploy to GitHub Pages
       - run: mkdocs gh-deploy --force
